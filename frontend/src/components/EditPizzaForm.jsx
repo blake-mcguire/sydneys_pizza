@@ -1,7 +1,9 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 function EditPizzaForm({ pizza, onCancel, onPizzaUpdated }) {
     const [name, setName] = useState(pizza.name);
@@ -46,34 +48,55 @@ function EditPizzaForm({ pizza, onCancel, onPizzaUpdated }) {
 
     return (
         <form onSubmit={handleSubmit}>
-            <input
-                type="text"
-                placeholder="Pizza Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                className="form-control mb-2"
-            />
-            <div>
-                <h4>Select Toppings</h4>
-                {availableToppings.map((topping) => (
-                    <label key={topping.topping_id} className="form-check">
-                        <input
-                            type="checkbox"
-                            className="form-check-input"
-                            value={topping.topping_id}
-                            onChange={handleToppingChange}
-                            checked={selectedToppings.includes(topping.topping_id)}
-                        />
-                        {topping.name}
-                    </label>
-                ))}
+            <div className="form-group">
+                <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Enter Pizza Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                />
             </div>
-            {error && <p className="text-danger">{error}</p>} 
-            <button type="submit" className="btn btn-success mr-2">Save Changes</button>
-            <button type="button" onClick={onCancel} className="btn btn-secondary">Cancel</button>
+            <div className="form-group">
+                <h4>Select Toppings</h4>
+                {availableToppings.length > 0 ? (
+                    availableToppings.map((topping) => (
+                        <div key={topping.topping_id} className="form-check">
+                            <input
+                                type="checkbox"
+                                className="form-check-input"
+                                value={topping.topping_id}
+                                onChange={handleToppingChange}
+                                checked={selectedToppings.includes(topping.topping_id)}
+                            />
+                            <label className="form-check-label">{topping.name}</label>
+                        </div>
+                    ))
+                ) : (
+                    <p>Loading toppings...</p>
+                )}
+            </div>
+            {error && <p className="text-danger">{error}</p>}
+            <button type="submit" className="btn btn-primary">Update Pizza</button>
+            <button type="button" className="btn btn-secondary" onClick={onCancel}>Cancel</button>
         </form>
     );
 }
+
+EditPizzaForm.propTypes = {
+    pizza: PropTypes.shape({
+        pizza_id: PropTypes.number.isRequired,
+        name: PropTypes.string.isRequired,
+        toppings: PropTypes.arrayOf(
+            PropTypes.shape({
+                topping_id: PropTypes.number.isRequired,
+                name: PropTypes.string.isRequired,
+            })
+        ).isRequired,
+    }).isRequired,
+    onCancel: PropTypes.func.isRequired,
+    onPizzaUpdated: PropTypes.func.isRequired,
+};
 
 export default EditPizzaForm;
