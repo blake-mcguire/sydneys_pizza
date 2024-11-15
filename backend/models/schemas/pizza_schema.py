@@ -1,20 +1,22 @@
-from flask_marshmallow import Marshmallow
-from marshmallow import fields, validate
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
+from models.pizzas import Pizza
+from models.toppings import Topping
+from models.schemas import ma  # Import the shared Marshmallow instance
+from models.schemas.topping_schema import ToppingSchema, ToppingReferenceSchema  # Import ToppingSchema for nested relationships
 
-ma = Marshmallow()
-
-class PizzaCreateSchema(ma.Schema):
-    pizza_id = fields.Integer()
-    name = fields.String(required=True, validate=validate.Length(min=1))
-    toppings = fields.List(fields.Nested('ToppingReferenceSchema'))
-
-    class Meta:
-        fields = ("pizza_id", "name", "toppings")
-
-class PizzaRetrieveSchema(ma.Schema):
-    pizza_id = fields.Integer()
-    name = fields.String(required=True)
-    toppings = fields.List(fields.Nested('ToppingSchema'))
+class PizzaRetrieveSchema(SQLAlchemyAutoSchema):
+    toppings = ma.Nested(ToppingSchema, many=True)
 
     class Meta:
-        fields = ("pizza_id", "name", "toppings")
+        model = Pizza
+        include_fk = True
+        include_relationships = True
+        load_instance = True
+
+class PizzaCreateSchema(SQLAlchemyAutoSchema):
+    toppings = ma.List(ma.Nested(ToppingReferenceSchema))
+
+    class Meta:
+        model = Pizza
+        include_relationships = True
+        load_instance = True

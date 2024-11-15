@@ -1,14 +1,15 @@
-from flask_marshmallow import Marshmallow
-from marshmallow import fields
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
+from models.toppings import Topping
+from models.schemas import ma  
 
-ma = Marshmallow()
-
-class ToppingReferenceSchema(ma.Schema):
-    topping_id = fields.Integer(required=True)
-
-class ToppingSchema(ma.Schema):
-    topping_id = fields.Integer()
-    name = fields.String(required=True)
-
+class ToppingReferenceSchema(SQLAlchemyAutoSchema):
     class Meta:
+        model = Topping
+        fields = ("topping_id",)
+        load_instance = True
+
+class ToppingSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Topping
         fields = ("topping_id", "name")
+        load_instance = True
