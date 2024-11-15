@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+// eslint-disable-next-line no-unused-vars
+import { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 function AddPizzaForm({ onPizzaAdded }) {
     const [name, setName] = useState('');
@@ -82,5 +84,9 @@ function AddPizzaForm({ onPizzaAdded }) {
         </form>
     );
 }
+
+AddPizzaForm.propTypes = {
+    onPizzaAdded: PropTypes.func.isRequired,
+};
 
 export default AddPizzaForm;

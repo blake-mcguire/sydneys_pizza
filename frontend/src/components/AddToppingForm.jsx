@@ -1,79 +1,58 @@
-import React, { useEffect, useState } from 'react';
+
+import { useState } from 'react';
+import PropTypes from 'prop-types';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-function EditPizzaForm({ pizza, onCancel, onPizzaUpdated }) {
-    const [name, setName] = useState(pizza.name);
-    const [availableToppings, setAvailableToppings] = useState([]);
-    const [selectedToppings, setSelectedToppings] = useState(pizza.toppings.map((topping) => topping.topping_id));
-    const [error, setError] = useState(''); // State to store error messages
+// Component to add a new topping
+function AddToppingForm({ onToppingAdded }) {
+    const [name, setName] = useState(''); 
+    const [error, setError] = useState(''); 
 
-    useEffect(() => {
-        const fetchToppings = async () => {
-            try {
-                const response = await axios.get(`${API_URL}/toppings`);
-                setAvailableToppings(response.data);
-            } catch (error) {
-                console.error("Error fetching toppings:", error);
-            }
-        };
-        fetchToppings();
-    }, []);
-
+    // Handle form submission
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        e.preventDefault(); // Prevent the default form submission behavior/reloading
+        if (!name.trim()) {
+            setError('Topping name cannot be empty.');
+            return;
+        }
         try {
-            const toppings = selectedToppings.map((id) => ({ topping_id: id }));
-            await axios.put(`${API_URL}/pizzas/${pizza.pizza_id}`, { name, toppings });
-            setError(''); // Clear error on successful submission
-            onPizzaUpdated(); 
+            // Send POST request to add new topping
+            await axios.post(`${API_URL}/toppings`, { name });
+            setName(''); 
+            setError(''); 
+            onToppingAdded(); // Trigger the parent callback to refresh the topping list
         } catch (error) {
-            if (error.response && error.response.status === 400) {
-                setError(error.response.data.error || "An error occurred. Please try again."); // Display error message
+            if (error.response) {
+                setError(`Error: ${error.response.status} ${error.response.statusText} - ${error.response.data?.error || "An error occurred."}`);
+            } else if (error.request) {
+                setError("Error: No response received from the server.");
             } else {
-                console.error("Error updating pizza:", error);
+                setError(`Error: ${error.message}`);
             }
         }
     };
 
-    const handleToppingChange = (e) => {
-        const { value, checked } = e.target;
-        setSelectedToppings((prev) =>
-            checked ? [...prev, parseInt(value)] : prev.filter((id) => id !== parseInt(value))
-        );
-    };
-
     return (
-        <form onSubmit={handleSubmit}>
-            <input
-                type="text"
-                placeholder="Pizza Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                className="form-control mb-2"
-            />
-            <div>
-                <h4>Select Toppings</h4>
-                {availableToppings.map((topping) => (
-                    <label key={topping.topping_id} className="form-check">
-                        <input
-                            type="checkbox"
-                            className="form-check-input"
-                            value={topping.topping_id}
-                            onChange={handleToppingChange}
-                            checked={selectedToppings.includes(topping.topping_id)}
-                        />
-                        {topping.name}
-                    </label>
-                ))}
+        <form onSubmit={handleSubmit} className="mb-3">
+            <div className="form-group">
+                <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="form-control"
+                    placeholder="Enter topping name"
+                />
+                {error && <div className="alert alert-danger mt-2">{error}</div>}
             </div>
-            {error && <p className="text-danger">{error}</p>} 
-            <button type="submit" className="btn btn-success mr-2">Save Changes</button>
-            <button type="button" onClick={onCancel} className="btn btn-secondary">Cancel</button>
+            <button type="submit" className="btn btn-primary">Add Topping</button>
         </form>
     );
 }
 
-export default EditPizzaForm;
+AddToppingForm.propTypes = {
+    onToppingAdded: PropTypes.func.isRequired,
+};
+
+export default AddToppingForm;
