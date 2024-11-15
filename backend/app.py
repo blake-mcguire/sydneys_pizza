@@ -17,7 +17,7 @@ from models.pizzas import Pizza  # Ensure you have a Pizza model defined similar
 
 # Import and register blueprints
 from controllers.toppings_controller import toppings_bp
-from controllers.pizzas_controller import pizzas_bp
+from controllers.pizzas_controllers import pizzas_bp
 app.register_blueprint(toppings_bp)
 app.register_blueprint(pizzas_bp)
 
