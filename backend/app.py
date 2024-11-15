@@ -11,9 +11,13 @@ app.config.from_object(DevelopmentConfig)
 # Initialize database
 db.init_app(app)
 
+# Import models to register them with SQLAlchemy
+from models.toppings import Topping
+from models.pizzas import Pizza  # Ensure you have a Pizza model defined similarly
+
 # Import and register blueprints
 from controllers.toppings_controller import toppings_bp
-from controllers.pizzas_controllers import pizzas_bp
+from controllers.pizzas_controller import pizzas_bp
 app.register_blueprint(toppings_bp)
 app.register_blueprint(pizzas_bp)
 
@@ -22,8 +26,10 @@ app.register_blueprint(pizzas_bp)
 def home():
     return "<h1>Pizza Management API</h1>"
 
+# Ensure database tables are created
+with app.app_context():
+    db.create_all()
+
 # Run the application
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
     app.run(debug=True)
