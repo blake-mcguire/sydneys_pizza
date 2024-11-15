@@ -14,7 +14,8 @@ pizzas_bp = Blueprint('pizzas', __name__)
 @pizzas_bp.route("/pizzas", methods=["GET"])
 def get_pizzas():
     pizzas = get_all_pizzas(db.session)
-    return pizza_retrieve_schema.jsonify(pizzas), 200
+    result = pizza_retrieve_schema.dump(pizzas)
+    return jsonify(result), 200
 
 @pizzas_bp.route("/pizzas", methods=["POST"])
 def add_pizza_route():
@@ -25,7 +26,8 @@ def add_pizza_route():
         return jsonify(err.messages), 400
 
     new_pizza = add_pizza(db.session, pizza_data['name'], [t['topping_id'] for t in pizza_data['toppings']])
-    return pizza_create_schema.jsonify(new_pizza), 201
+    result = pizza_create_schema.dump(new_pizza)
+    return jsonify(result), 201
 
 @pizzas_bp.route("/pizzas/<int:pizza_id>", methods=["PUT"])
 def update_pizza_route(pizza_id):
@@ -39,7 +41,8 @@ def update_pizza_route(pizza_id):
     if not pizza:
         return jsonify({"error": "Pizza not found"}), 404
     db.session.refresh(pizza)
-    return pizza_create_schema.jsonify(pizza), 200
+    result = pizza_create_schema.dump(pizza)
+    return jsonify(result), 200
 
 @pizzas_bp.route("/pizzas/<int:pizza_id>", methods=["DELETE"])
 def delete_pizza_route(pizza_id):

@@ -14,7 +14,8 @@ toppings_bp = Blueprint('toppings', __name__)
 @toppings_bp.route("/toppings", methods=["GET"])
 def get_toppings():
     toppings = get_all_toppings(db.session)
-    return toppings_schema.jsonify(toppings), 200
+    result = toppings_schema.dump(toppings)
+    return jsonify(result), 200
 
 @toppings_bp.route("/toppings", methods=["POST"])
 def add_topping_route():
@@ -25,7 +26,8 @@ def add_topping_route():
         return jsonify(err.messages), 400
 
     new_topping = add_topping(db.session, topping_data.name)
-    return topping_schema.jsonify(new_topping), 201
+    result = topping_schema.dump(new_topping)
+    return jsonify(result), 201
 
 @toppings_bp.route("/toppings/<int:topping_id>", methods=["PUT"])
 def edit_topping_route(topping_id):
@@ -37,7 +39,8 @@ def edit_topping_route(topping_id):
     topping = update_topping(db.session, topping_id, topping_data.name)
     if not topping:
         return jsonify({"error": "Topping not found"}), 404
-    return topping_schema.jsonify(topping), 200
+    result = topping_schema.dump(topping)
+    return jsonify(result), 200
 
 @toppings_bp.route("/toppings/<int:topping_id>", methods=["DELETE"])
 def delete_topping_route(topping_id):
