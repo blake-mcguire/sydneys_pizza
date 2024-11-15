@@ -19,7 +19,8 @@ def get_toppings():
 @toppings_bp.route("/toppings", methods=["POST"])
 def add_topping_route():
     try:
-        topping_data = topping_schema.load(request.json)
+        # Pass the session to the load method
+        topping_data = topping_schema.load(request.json, session=db.session)
     except ValidationError as err:
         return jsonify(err.messages), 400
 
@@ -29,7 +30,7 @@ def add_topping_route():
 @toppings_bp.route("/toppings/<int:topping_id>", methods=["PUT"])
 def edit_topping_route(topping_id):
     try:
-        topping_data = topping_schema.load(request.json)
+        topping_data = topping_schema.load(request.json, session=db.session)
     except ValidationError as err:
         return jsonify(err.messages), 400
 

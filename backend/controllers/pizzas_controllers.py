@@ -19,7 +19,8 @@ def get_pizzas():
 @pizzas_bp.route("/pizzas", methods=["POST"])
 def add_pizza_route():
     try:
-        pizza_data = pizza_create_schema.load(request.json)
+        # Pass the session to the load method
+        pizza_data = pizza_create_schema.load(request.json, session=db.session)
     except ValidationError as err:
         return jsonify(err.messages), 400
 
@@ -29,7 +30,8 @@ def add_pizza_route():
 @pizzas_bp.route("/pizzas/<int:pizza_id>", methods=["PUT"])
 def update_pizza_route(pizza_id):
     try:
-        pizza_data = pizza_create_schema.load(request.json)
+        # Pass the session to the load method
+        pizza_data = pizza_create_schema.load(request.json, session=db.session)
     except ValidationError as err:
         return jsonify(err.messages), 400
 
