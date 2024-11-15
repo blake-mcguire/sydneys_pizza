@@ -24,7 +24,7 @@ def add_topping_route():
     except ValidationError as err:
         return jsonify(err.messages), 400
 
-    new_topping = add_topping(db.session, topping_data['name'])
+    new_topping = add_topping(db.session, topping_data.name)
     return topping_schema.jsonify(new_topping), 201
 
 @toppings_bp.route("/toppings/<int:topping_id>", methods=["PUT"])
@@ -34,7 +34,7 @@ def edit_topping_route(topping_id):
     except ValidationError as err:
         return jsonify(err.messages), 400
 
-    topping = update_topping(db.session, topping_id, topping_data['name'])
+    topping = update_topping(db.session, topping_id, topping_data.name)
     if not topping:
         return jsonify({"error": "Topping not found"}), 404
     return topping_schema.jsonify(topping), 200

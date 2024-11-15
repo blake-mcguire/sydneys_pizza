@@ -13,3 +13,5 @@ class ToppingSchema(SQLAlchemyAutoSchema):
         model = Topping
         fields = ("topping_id", "name")
         load_instance = True
+        include_fk = True
+        include_relationships = True
