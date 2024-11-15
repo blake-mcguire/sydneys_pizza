@@ -14,7 +14,7 @@ class PizzaRetrieveSchema(SQLAlchemyAutoSchema):
         load_instance = True
 
 class PizzaCreateSchema(SQLAlchemyAutoSchema):
-    toppings = ma.List(ma.Nested(ToppingReferenceSchema))
+    toppings = ma.Nested(ToppingReferenceSchema, many=True)
 
     class Meta:
         model = Pizza
