@@ -1,101 +1,85 @@
-import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
+import EditPizzaForm from './EditPizzaForm';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = 'http://localhost:5000';
 
-function EditPizzaForm({ pizza, onCancel, onPizzaUpdated }) {
-    const [name, setName] = useState(pizza.name);
-    const [availableToppings, setAvailableToppings] = useState([]);
-    const [selectedToppings, setSelectedToppings] = useState(pizza.toppings.map((topping) => topping.topping_id));
-    const [error, setError] = useState(''); // State to store error messages
+function PizzaList() {
+    const [pizzas, setPizzas] = useState([]);
+    const [editPizzaId, setEditPizzaId] = useState(null);
 
     useEffect(() => {
-        const fetchToppings = async () => {
-            try {
-                const response = await axios.get(`${API_URL}/toppings`);
-                setAvailableToppings(response.data);
-            } catch (error) {
-                console.error("Error fetching toppings:", error);
-            }
-        };
-        fetchToppings();
+        fetchPizzas();
     }, []);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const fetchPizzas = async () => {
         try {
-            const toppings = selectedToppings.map((id) => ({ topping_id: id }));
-            await axios.put(`${API_URL}/pizzas/${pizza.pizza_id}`, { name, toppings });
-            setError(''); // Clear error on successful submission
-            onPizzaUpdated(); 
+            const response = await axios.get(`${API_URL}/pizzas`);
+            setPizzas(response.data);
         } catch (error) {
-            if (error.response && error.response.status === 400) {
-                setError(error.response.data.error || "An error occurred. Please try again."); // Display error message
-            } else {
-                console.error("Error updating pizza:", error);
-            }
+            console.error("Error fetching pizzas:", error);
         }
     };
 
-    const handleToppingChange = (e) => {
-        const { value, checked } = e.target;
-        setSelectedToppings((prev) =>
-            checked ? [...prev, parseInt(value)] : prev.filter((id) => id !== parseInt(value))
-        );
+    const handleDelete = async (pizzaId) => {
+        try {
+            await axios.delete(`${API_URL}/pizzas/${pizzaId}`);
+            fetchPizzas();
+        } catch (error) {
+            console.error("Error deleting pizza:", error);
+        }
+    };
+
+    const handleEditClick = (pizzaId) => {
+        setEditPizzaId(pizzaId);
+    };
+
+    const handleEditCancel = () => {
+        setEditPizzaId(null);
+    };
+
+    const handlePizzaUpdated = () => {
+        fetchPizzas();
+        setEditPizzaId(null);
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <div className="form-group">
-                <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Enter Pizza Name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                />
-            </div>
-            <div className="form-group">
-                <h4>Select Toppings</h4>
-                {availableToppings.length > 0 ? (
-                    availableToppings.map((topping) => (
-                        <div key={topping.topping_id} className="form-check">
-                            <input
-                                type="checkbox"
-                                className="form-check-input"
-                                value={topping.topping_id}
-                                onChange={handleToppingChange}
-                                checked={selectedToppings.includes(topping.topping_id)}
+        <div className="container">
+            <h3 className="my-3">Pizzas</h3>
+            <ul className="list-group">
+                {pizzas.map((pizza) => (
+                    <li key={pizza.pizza_id} className="list-group-item d-flex justify-content-between align-items-center">
+                        {editPizzaId === pizza.pizza_id ? (
+                            <EditPizzaForm
+                                pizza={pizza}
+                                onCancel={handleEditCancel}
+                                onPizzaUpdated={handlePizzaUpdated}
                             />
-                            <label className="form-check-label">{topping.name}</label>
-                        </div>
-                    ))
-                ) : (
-                    <p>Loading toppings...</p>
-                )}
-            </div>
-            {error && <p className="text-danger">{error}</p>}
-            <button type="submit" className="btn btn-primary">Update Pizza</button>
-            <button type="button" className="btn btn-secondary" onClick={onCancel}>Cancel</button>
-        </form>
+                        ) : (
+                            <>
+                                <span>
+                                    <strong>{pizza.name}</strong> - Toppings: 
+                                    {pizza.toppings.length > 0 ? (
+                                        pizza.toppings.map((topping, index) => (
+                                            <span key={topping.topping_id}>
+                                                {topping.name}{index < pizza.toppings.length - 1 ? ', ' : ' '}
+                                            </span>
+                                        ))
+                                    ) : (
+                                        <span> None</span>
+                                    )}
+                                </span>
+                                <div>
+                                    <button onClick={() => handleEditClick(pizza.pizza_id)} className="btn btn-secondary btn-sm mr-2">Edit</button>
+                                    <button onClick={() => handleDelete(pizza.pizza_id)} className="btn btn-danger btn-sm">Delete</button>
+                                </div>
+                            </>
+                        )}
+                    </li>
+                ))}
+            </ul>
+        </div>
     );
 }
 
-EditPizzaForm.propTypes = {
-    pizza: PropTypes.shape({
-        pizza_id: PropTypes.number.isRequired,
-        name: PropTypes.string.isRequired,
-        toppings: PropTypes.arrayOf(
-            PropTypes.shape({
-                topping_id: PropTypes.number.isRequired,
-                name: PropTypes.string.isRequired,
-            })
-        ).isRequired,
-    }).isRequired,
-    onCancel: PropTypes.func.isRequired,
-    onPizzaUpdated: PropTypes.func.isRequired,
-};
-
-export default EditPizzaForm;
+export default PizzaList;
